@@ -1,23 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 #nullable disable
 
-namespace AesCloudData
+namespace AesCloudDataNet.Models
 {
     public partial class User
     {
-        [Key]
-        public string Name { get; set; }
+        private string name;
+        private Guid? guid;
+        private int _hashCode = 0;
+
         [JsonIgnore]
-        public int UserId { get; set; }
+        public int Id { get => _hashCode; set { } }
+        public string Name
+        {
+            get => name;
+            set { 
+                name = value.ToUpper();
+                _hashCode = name.GetHashCode();
+              } 
+        }
         public string Email { get; set; }
         public string Password { get; set; }
-        public Guid? Guid { get; set; }
+        public Guid? Guid { get => guid = guid ?? System.Guid.NewGuid(); set => guid = value; }
         public int Severity { get; set; }
-
-       
+        public override int GetHashCode()
+        {
+            return _hashCode;
+        }
     }
 }

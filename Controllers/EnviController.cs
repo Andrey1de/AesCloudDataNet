@@ -1,13 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
-namespace AesCloudData.Controllers
+namespace AesCloudDataNet.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -21,7 +18,7 @@ namespace AesCloudData.Controllers
             return Environment.GetEnvironmentVariables();
         }
 
-        [HttpGet("user-name")]
+        [HttpGet("username")]
         public string GetUserName()
         {
             return Environment.UserName;
@@ -32,7 +29,13 @@ namespace AesCloudData.Controllers
         {
             return Environment.GetEnvironmentVariable(name);
         }
-      
+        [HttpPost("{name}/{value}")]
+        public string SetVariable(string name, string value)
+        {
+             Environment.SetEnvironmentVariable(name,value);
+            return Environment.GetEnvironmentVariable(name);
+        }
+
 
 
     }

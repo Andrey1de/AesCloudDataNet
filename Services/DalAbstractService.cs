@@ -4,11 +4,15 @@ using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using AesCloudData;
+using AesCloudDataNet.Exceptions;
+using EType = AesCloudDataNet.Exceptions.StoreException.EType;
+using System.Net.Http;
+using Microsoft.EntityFrameworkCore;
+
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
-namespace AesCloudDataNet.Controllers
+namespace AesCloudDataNet.Services
 {
     //public interface IDalAbstractServiceFacade<TKey, T> where T : class, new()
     //{
@@ -23,94 +27,100 @@ namespace AesCloudDataNet.Controllers
     //}
     public interface IDalAbstractService<TKey, T> where T : class, new()
     {
-        public Task<T> Get(TKey key, bool usePersist);
-        public Task<List<T>> List(bool usePersist);
+        public Task<T> Get(TKey key, bool toRetrieve);
+        public Task<List<T>> List(bool toRetrieve);
+        public Task<T> Insert(TKey key, T valueIn, bool toRetrieve);
+        public Task<T> Update(TKey key, T valueIn, bool toRetrieve);
+        public Task Delete(TKey key, bool toRetrieve);
 
-        public Task<T> Insert(TKey key, T valueIn, bool usePersist);
-
-        public Task<T> Update(TKey key, T valueIn, bool usePersist);
-        public Task Delete(TKey key, bool usePersist);
+        public bool HasItem(TKey key);
 
     }
-    public abstract class DalAbstractService<TKey, T> : IDalAbstractService<TKey, T>
+    public abstract class DalAbstractService<TKey, T> : 
+        AbstractSpool<TKey, T>, IDalAbstractService<TKey, T>
         where T : class, new()
-    { 
-        protected class Store<T>
-        {
-            public readonly TKey Key;
-            public T Item;
-            public DateTime Updated;
-            public Store(TKey key,T item)
-            {
-                Key = key;
-                Item = item;
-                Updated = new DateTime();
-            }
-            public bool Valid => (ActualForMs <= 0) ||
-                Updated.AddMilliseconds(ActualForMs) > DateTime.Now;
-
-        }
-
-        public void Assert(object o)
-        {
-            if (o == null) throw new NullReferenceException();
-        }
-        protected static readonly ConcurrentDictionary<TKey, Store<T>> DictInternal;
-        readonly private  ILogger Log;
+    {
         /// <summary>
         /// Stores how mach time in ms would be actual Item. Otherwise if 0 - imlimited
         /// </summary>
-        public static int ActualForMs { get; set; } = 1000 * 3600;
-        public Dictionary<TKey, T> Dict => DictInternal.ToDictionary(p => p.Key, p => p.Value.Item);
-           // GET: api/<DalAbstractController>
+       // public static  int ActualForMs { get; protected set; } = 1000 * 3600;
+
+   
+
+        readonly private  ILogger Log;
+             // GET: api/<DalAbstractController>
         #region ctrors
-        static DalAbstractService()
-        {
-            DictInternal = new ConcurrentDictionary<TKey, Store<T>>();
-        }
-        public DalAbstractService(ILogger _logger)
+        public DalAbstractService(ILogger _logger, int actual)
+            : base(actual)
         {
             Log = _logger;
+            ActualForMs = actual;
         }
 
         #endregion
+        #region Facade Functions - IDalAbstractService<TKey, T>
 
-        public virtual async Task<T> Get(TKey key, bool usePersist)
+        public virtual async Task<T> Get(TKey key, bool toRetrieve)//, bool useHttp)
         {
-            Store<T> store = InternalGet(key, usePersist);
-           
-            if (usePersist)
+            T item = SpoolGet(key);
+            if (!toRetrieve)
             {
-                T item = await RetrieveStorageItem(key);
+                return item;
+            }
+
+            try
+            {
+                item = await RetrieveStorageItem(key);
 
                 if (item != default(T))
                 {
-                    DictInternal.TryAdd(key, new Store<T>(key, item));
+                    DictInternal.TryAdd(key, new SpoolItem<TKey, T>(key, item));
                 }
 
-            }
+                return item;
 
-            return store.Item;
+            }
+            catch (Exception ex)
+            {
+                string msg = $"Conflict in Get key={key} : {ex.Message}";
+                ex = new StoreException(EType.Get, msg, ex);
+                //   
+                throw ex;
+            }
         }
-        public virtual async Task<List<T>> List(bool usePersist)
+
+
+        public virtual async Task<List<T>> List(bool toRetrieve)
         {
-            if (!usePersist)
+            if (!toRetrieve)
             {
-                return Dict.Values.ToList();
+                return SpoolList();
             }
-            DictInternal.Clear();
+            SpoolClear();
 
-
-            Dictionary<TKey, T> _dic = await RetrieveStorageItemsList();
-            if (_dic != null)
+            try
             {
-                foreach (var (key, value) in _dic)
+
+                Dictionary<TKey, T> _dic = await RetrieveStorageItemsList();
+                if (_dic != null)
                 {
-                    DictInternal.TryAdd(key, new Store<T>(key, value));
+                    foreach (var (key, value) in _dic)
+                    {
+                        SpoolAddOrUpdate(key, value);
+                    }
+
                 }
+                return SpoolList();
 
             }
-            return Dict.Values.ToList(); ;
+            catch (Exception ex)
+            {
+                string msg = $"Conflict in List ";
+                ex = new StoreException(EType.List, msg, ex);
+                Log.LogError(ex.Message, ex);
+                throw ex;
+            }
+
 
         }
         /// <summary>
@@ -121,42 +131,54 @@ namespace AesCloudDataNet.Controllers
         /// <param name="valueIn"></param>
         /// <param name="usePersist"></param>
         /// <returns></returns>
-        public virtual async Task<T> Insert(TKey key, T valueIn, bool usePersist)
+        public virtual async Task<T> Insert(TKey key, T valueIn, bool toRetrieve)
         {
-
-            Store<T> store = InternalGet(key, usePersist);
-            if (store != null )
+            T item = null;
+            if (!toRetrieve)
             {
-                return null; 
+                SpoolAddOrUpdate( key, valueIn, out item);
+                return  item;
+
             }
 
-            store = new Store<T>(key, valueIn);
-
-            if (usePersist)
+            if (HasItem(key))
             {
-                //May be DB Updates somteh
-                try
-                {
-                    store.Item = await TryInserStoragetItem(key, valueIn);
-
-                }
-                catch (Exception)
-                {
-                    Log.LogWarning($"Conflict in Insert {key}");
-                    DictInternal.TryRemove(key, out store);
-                }
-
-
-            } 
-            if(store.Item != null)
-            {
-                DictInternal.TryAdd(key, store);
+                Exception ex = new StoreException(EType.Insert, $"The item with key={key} just present ");
+                Log.LogError(ex.Message, ex);
+                throw ex;
 
             }
-            return store.Item;
+
+     
+            try
+            {
+                item = await TryInserStoragetItem(key, valueIn);
+            }
+            catch (Exception ex)
+            {
+                string msg = $"Insert Conflict key={key} ";
+                ex = new StoreException(EType.Insert, $"Insert Conflict key={key} ", ex);
+               // Log.LogError(ex.Message, ex);
+                throw ex;
+            }
+
+            if (item == null)
+            {
+                string msg = $"Insert Conflict key={key} ";
+                Exception ex = new StoreException(EType.Insert, $"Insert conflict, key={key}");
+               // Log.LogError(ex.Message, ex);
+                throw ex;
+
+            }
+
+
+            SpoolAddOrUpdate(key, item, out item);
+            return item;
 
 
         }
+
+
         /// <summary>
         /// Update value if this just exists
         /// In Hasn updated those Store value without Updating !!!
@@ -165,50 +187,63 @@ namespace AesCloudDataNet.Controllers
         /// <param name="valueIn"></param>
         /// <param name="usePersist"></param>
         /// <returns></returns>
-        public virtual async Task<T> Update(TKey key, T valueIn, bool usePersist)
+        public virtual async Task<T> Update(TKey key, T valueIn, bool toRetrieve)
         {
-            Store<T> store = InternalGet(key, usePersist);
-            //If value isn't exist return null
-            if (store == null )
+
+            T item = null;
+            if (!toRetrieve)
             {
-                return null;
+                SpoolAddOrUpdate(key, valueIn, out item);
+                return item;
             }
 
-            T item = valueIn;
 
-            if (usePersist)
+                     //If value isn't exist return null
+            if (!HasItem(key))
             {
+                Exception ex = new StoreException(EType.Update,
+                                $"The item with key={key} not present");
+                //Log.LogError(ex.Message, ex);
+                throw ex;
+            }
 
-                try
-                {
 
-                    item = await TryUpdateStorageItem(key, valueIn);
-
-                }
-                catch (Exception ex)
-                {
-                    Log.LogWarning($"Conflict in update {key}");
-                    DictInternal.TryRemove(key, out store);
-                    return null;
-                }
+            try
+            {
+                item = await TryUpdateStorageItem(key, valueIn);
+                
+            }
+            catch (Exception ex)
+            {
+               SpoolDelete(key);
+                ex = new StoreException(EType.Update,
+                    $"Update conflict key={key}", ex);
+    //            Log.LogError(ex.Message, ex);
+                throw ex;
 
             }
-            if(item != null)
+            if (item == null)
             {
-                store.Item = item;
-                store.Updated = DateTime.Now;
+                DictInternal.TryRemove(key, out store);
 
+                Exception ex = new StoreException(EType.Update,
+                                 $"Update conflict key={key}");
+     //           Log.LogError(ex.Message, ex);
+                throw ex;
             }
+
+
             return store.Item;
 
 
 
         }
 
+
         public virtual async Task Delete(TKey key, bool usePersist)
         {
-            Store<T> store = null;
-            DictInternal.TryRemove(key, out store);
+            SpoolItem<TKey,T> store = null;
+            SpoolDelete(key);
             if (usePersist)
             {
 
@@ -219,48 +254,32 @@ namespace AesCloudDataNet.Controllers
                 }
                 catch (Exception ex)
                 {
-                    Log.LogWarning($"Conflict in update {key}");
-                    DictInternal.TryRemove(key, out store);
-                } 
-            }
-
-        }
-
- 
-        private Store<T> InternalGet(TKey key, bool usePersist)
-        {
-            Store<T> store = null;
-            if (DictInternal.TryGetValue(key, out store))
-            {
-                if (usePersist && !store.Valid)
-                {
-                    Store<T> val0 = null;
-                    DictInternal.TryRemove(key, out val0);
+                    Log.LogWarning($"Conflict in update {key} : {ex.Message}");
+                   
                 }
             }
 
-            return store;
-
         }
 
+        #endregion
 
-  
+        #region Abstract Storage Functions
         protected abstract Task<T> RetrieveStorageItem(TKey key);
 
         protected abstract Task<Dictionary<TKey, T>> RetrieveStorageItemsList();
 
-  
+
         protected abstract Task<T> TryInserStoragetItem(TKey key, T valueIn);
 
 
         protected abstract Task<T> TryUpdateStorageItem(TKey key, T valueIn);
 
-     
- 
+
+
         protected abstract Task TryDeleteStorageItem(TKey key);
 
-      
+        #endregion
 
-        
+
     }
 }

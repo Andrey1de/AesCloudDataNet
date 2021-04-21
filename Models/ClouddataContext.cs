@@ -4,15 +4,14 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 #nullable disable
 
-namespace AesCloudData
-{
-    public partial class ClouddataContext : DbContext
+namespace AesCloudDataNet
+    public partial class clouddataContext : DbContext
     {
-        public ClouddataContext()
+        public clouddataContext()
         {
         }
 
-        public ClouddataContext(DbContextOptions<ClouddataContext> options)
+        public clouddataContext(DbContextOptions<clouddataContext> options)
             : base(options)
         {
         }
@@ -26,7 +25,7 @@ namespace AesCloudData
             if (!optionsBuilder.IsConfigured)
             {
 //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseNpgsql("host=localhost;port=5432;database=clouddata;userid=postgres;password=1q1q");
+//                optionsBuilder.UseNpgsql("host=localhost;port=5432;database=clouddata;userid=postgres;password=1q1q");
             }
         }
 
@@ -36,19 +35,20 @@ namespace AesCloudData
 
             modelBuilder.Entity<RateToUsd>(entity =>
             {
-                entity.HasKey(e => e.Code)
-                    .HasName("pk_rate_to_usd");
-
                 entity.ToTable("RateToUsd", "andrey1de");
+
+                entity.Property(e => e.Id)
+                    .ValueGeneratedNever()
+                    .HasColumnName("id");
+
+                entity.Property(e => e.Ask).HasColumnName("ask");
+
+                entity.Property(e => e.Bid).HasColumnName("bid");
 
                 entity.Property(e => e.Code)
                     .HasMaxLength(3)
                     .HasColumnName("code")
                     .IsFixedLength(true);
-
-                entity.Property(e => e.Ask).HasColumnName("ask");
-
-                entity.Property(e => e.Bid).HasColumnName("bid");
 
                 entity.Property(e => e.LastRefreshed)
                     .HasColumnType("timestamp(3) with time zone")
@@ -67,22 +67,21 @@ namespace AesCloudData
 
             modelBuilder.Entity<User>(entity =>
             {
-                entity.HasKey(e => e.Name)
-                    .HasName("pk_user");
-
                 entity.ToTable("Users", "andrey1de");
 
-                entity.Property(e => e.Name).HasColumnName("name");
+                entity.Property(e => e.Id)
+                    .ValueGeneratedNever()
+                    .HasColumnName("id");
 
                 entity.Property(e => e.Email).HasColumnName("email");
 
                 entity.Property(e => e.Guid).HasColumnName("guid");
 
+                entity.Property(e => e.Name).HasColumnName("name");
+
                 entity.Property(e => e.Password).HasColumnName("password");
 
                 entity.Property(e => e.Severity).HasColumnName("severity");
-
-                entity.Property(e => e.UserId).HasColumnName("user_id");
             });
 
             modelBuilder.Entity<UserAction>(entity =>
@@ -95,7 +94,11 @@ namespace AesCloudData
 
                 entity.Property(e => e.Blob).HasColumnName("blob");
 
-                entity.Property(e => e.Guid).HasColumnName("guid");
+                entity.Property(e => e.Guid)
+                    .IsRequired()
+                    .HasMaxLength(16)
+                    .HasColumnName("guid")
+                    .IsFixedLength(true);
 
                 entity.Property(e => e.Json).HasColumnName("json");
 

@@ -1,32 +1,30 @@
-﻿using AesCloudData;
-using AesCloudDataNet.Controllers;
+﻿using AesCloudDataNet.Models;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace AesCloudDataNet.Services
 {
     public interface IExchangeRateService :
-            IDalAbstractService<string, RateToUsd>
+            IDalAbstractHttpService<string, RateToUsd>
     {
      
     }
 
     public class ExchangeRateService :
-        DalAbstractService<string, RateToUsd>,
+        DalAbstractHttpService<string, RateToUsd>,
         IExchangeRateService
     {
-        private readonly HttpClient Client;
+        private readonly HttpClient Client ;
         ILogger<ExchangeRateService> Log; 
 
-        public ExchangeRateService(ILogger<ExchangeRateService> logger)
-            : base(logger)
+        public ExchangeRateService(ILogger<ExchangeRateService> logger, HttpClient client)
+            : base(logger, client)
         {
             Log = logger;
-            Client = new HttpClient();
+            Client = client;
         }
         /// <returns></returns>
         public async override Task<RateToUsd> Get(string key, bool toRetrieve)
@@ -47,7 +45,7 @@ namespace AesCloudDataNet.Services
 
         public async override Task<RateToUsd> Update(string key, RateToUsd valueIn, bool toRetrieve)
         {
-            return await base.Update(key, toRetrieve);
+            return await base.Update(key,valueIn ,toRetrieve);
         }
 
         public async override Task Delete(string key, bool toRetrieve)
@@ -56,48 +54,47 @@ namespace AesCloudDataNet.Services
         }
 
 
-     
+        #region Storage Overridable don't use usePersist = true !!!!
+        protected async override Task<RateToUsd> RetrieveStorageItem(string code)
+        {
+            throw new NotImplementedException();
+        }
+
+
         protected override Task<Dictionary<string, RateToUsd>> RetrieveStorageItemsList()
         {
             throw new NotImplementedException();
         }
 
-   
-        protected override Task<RateToUsd> TryInserStoragetItem(string key, RateToUsd valueIn)
-        {
-            throw new NotImplementedException();
-        }
 
-        protected override Task<RateToUsd> TryUpdateStorageItem(string key, RateToUsd valueIn)
-        {
-            throw new NotImplementedException();
-        }
+         #endregion
+       
+        readonly string[] AlphavantageSecretKeys = { "55Y1508W05UYQN3G", "3MEYVIGY6HV9QYMI" };
 
-        protected override Task TryDeleteStorageItem(string key)
-        {
-            throw new NotImplementedException();
-        }
+        public override string ConvertorUrl { get => throw new NotImplementedException(); init => throw new NotImplementedException(); }
 
-        protected async override Task<RateToUsd> RetrieveStorageItem(string code)
+        //AND This Service Get form Http and stores to DB if neccessary
+        protected async virtual Task<RateToUsd> GetItemByHttp(string code)
         {
             RateToUsd rate = null;
             try
             {
-                var AlphavantageSecretKeys = ["55Y1508W05UYQN3G", "3MEYVIGY6HV9QYMI"];
-
+  
                 string url =
                       "https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&" +
                       "from_currency=USD&to_currency=" + code;
 
                 string url0 = url + "&apikey=" + AlphavantageSecretKeys[0];
                 string url1 = url + "&apikey=" + AlphavantageSecretKeys[1];
-                 rate = await RetrieveFromHttp(url0);
+                rate = await ReceiveItem(code,url0);
                 if (rate == null)
                 {
-                    rate = await RetrieveFromHttp(url1);
+                    rate = await ReceiveItem(code, url0);
                 }
+
+              
              }
-            catch (Exception ex)
+            catch (Exception)
             {
 
                 throw;
@@ -107,17 +104,14 @@ namespace AesCloudDataNet.Services
         }
 
 
-        private async Task<RateToUsd> RetrieveFromHttp(string code)
+          private  async Task<RateToUsd> ReceiveItem(string code,string url)
         {
-      
-            var jsonBody = await HttpGet(url0);
+            var jsonBody = await HttpGetJson(Client, url);
+           
             if (!jsonBody.Contains("1. From_Currency Code"))
-            {
-                jsonBody = await HttpGet(url1);
-            }
+                return null;
 
-
-            string[] pars1 = new string[] {
+                string[] pars1 = new string[] {
                     "\"4. To_Currency Name\":",
                     "\"5. Exchange Rate\":",
                     "\"6. Last Refreshed\":",
@@ -143,6 +137,16 @@ namespace AesCloudDataNet.Services
 
 
 
+        }
+
+        public override RateToUsd DecodeBody(string code, string jsonBody)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task<string> GetFromHttp(string key)
+        {
+            throw new NotImplementedException();
         }
     }
 }

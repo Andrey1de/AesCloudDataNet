@@ -1,5 +1,3 @@
-using AesCloudData;
-using AesCloudData.Utils;
 using AesCloudDataNet.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -15,7 +13,7 @@ namespace AasCloudData
 {
     public class Startup
     {
-        readonly string DATABASE_URL = "";
+       // readonly string DATABASE_URL = "";
         readonly string PostgresConnectionString = "";
         readonly bool IS_HEROKU;
 
@@ -30,26 +28,26 @@ namespace AasCloudData
             IS_HEROKU  = true || bool.TryParse(Environment.GetEnvironmentVariable("IS_HEROKU"), out IS_HEROKU);
             Console.WriteLine("IS_HEROKU:" + IS_HEROKU.ToString().ToUpper());
     
-            if (IS_HEROKU)
-            {
+            //if (IS_HEROKU)
+            //{
 
-                DATABASE_URL = Environment.GetEnvironmentVariable("DATABASE_URL") ?? DATABASE_URL_MOK;
-                if (isStr(DATABASE_URL))
-                {
-                    PostgresConnectionString = ForPostgress.ParseDatabaseUrl(DATABASE_URL);
-                    if (isStr(PostgresConnectionString))
-                    {
-                        Console.WriteLine("PostgresConnectionString:" + PostgresConnectionString);
-                        Environment.SetEnvironmentVariable("POSTGRES_CONNECTION_STRING", PostgresConnectionString);
-                    }
-                }
-            }
-            else
-            {
-                PostgresConnectionString = Configuration.GetConnectionString("PostgresConnectionString");
-                Console.WriteLine("PostgresConnectionString:" + PostgresConnectionString);
+            //    DATABASE_URL = Environment.GetEnvironmentVariable("DATABASE_URL");// ?? DATABASE_URL_MOK;
+            //    if (isStr(DATABASE_URL))
+            //    {
+            //        PostgresConnectionString = ForPostgress.ParseDatabaseUrl(DATABASE_URL);
+            //        if (isStr(PostgresConnectionString))
+            //        {
+            //            Console.WriteLine("PostgresConnectionString:" + PostgresConnectionString);
+            //            Environment.SetEnvironmentVariable("POSTGRES_CONNECTION_STRING", PostgresConnectionString);
+            //        }
+            //    }
+            //}
+            //else
+            //{
+            //    PostgresConnectionString = Configuration.GetConnectionString("PostgresConnectionString");
+            //    Console.WriteLine("PostgresConnectionString:" + PostgresConnectionString);
 
-            }
+            //}
 
 
             Console.ForegroundColor = old;
@@ -66,6 +64,8 @@ namespace AasCloudData
             Console.ForegroundColor = ConsoleColor.Blue;
             services.AddScoped<IExchangeRateService, ExchangeRateService>();
 
+            services.AddScoped<IUserService, UserService>();
+
             services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
             {
                 builder.AllowAnyOrigin()
@@ -76,11 +76,11 @@ namespace AasCloudData
 
             if (isStr(PostgresConnectionString))
             {
-                _ = services.AddDbContext<ClouddataContext>(options =>
-                {
-                    options.UseNpgsql(PostgresConnectionString);
-                    Console.WriteLine($"AddDbContext:UseNpgsql({PostgresConnectionString})");
-                });
+                //_ = services.AddDbContext<ClouddataContext>(options =>
+                //{
+                //    options.UseNpgsql(PostgresConnectionString);
+                //    Console.WriteLine($"AddDbContext:UseNpgsql({PostgresConnectionString})");
+                //});
             }
 
 

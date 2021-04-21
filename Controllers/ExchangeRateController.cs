@@ -1,23 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using AesCloudData;
 using Microsoft.Extensions.Logging;
 using AesCloudDataNet.Services;
+using AesCloudDataNet.Models;
 
-namespace AesCloudData.Controllers
+namespace AesCloudDataNet.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class ExchangeRateController : ControllerBase
     {
+        const bool TO_USE_DB = false;
+ //       const bool TO_USE_HTTP = true;
+
         private readonly IExchangeRateService Dal;
         ILogger<ExchangeRateController> Log;
-        readonly bool 
+        //readonly bool 
         bool norm(ref string code)
         {
             code = (code ?? "").ToUpper();
@@ -36,20 +36,20 @@ namespace AesCloudData.Controllers
 
         // GET: api/ExchangeRate
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<RateToUsd>>> GetRateToUsds()
+        public async Task<ActionResult<List<RateToUsd>>> Get()
         {
-            return await Dal.List();
+            return await Dal.List(TO_USE_DB);
         }
 
         // GET: api/ExchangeRate/ILS
         [HttpGet("{code}")]
-        public async Task<ActionResult<RateToUsd>> GetRateToUsd(string code)
+        public async Task<ActionResult<RateToUsd>> Get(string code)
         {
-            if(!norm(ref code))
+            if (!norm(ref code))
             {
-                return BadRequest();
+                return BadRequest("code");
             }
-            var rateToUsd = await Dal.RateToUsds.FindAsync(code);
+            var rateToUsd = await Dal.Get(code, TO_USE_DB);
 
             if (rateToUsd == null)
             {
@@ -59,104 +59,55 @@ namespace AesCloudData.Controllers
             return rateToUsd;
         }
 
-        // PUT: api/ExchangeRate/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkcode=2123754
-        [HttpPut("{code}")]
-        public async Task<ActionResult<RateToUsd>> UpdateRateToUsd(string code, RateToUsd rateToUsd)
+
+        [HttpGet("{from}/{to}")]
+        public async Task<ActionResult<FromTo>> GetPair(string from , string to)
         {
-
-            if (!norm(ref code) || !norm(rateToUsd) || code != rateToUsd.Code)
+            if (!norm(ref from))
             {
-                return BadRequest();
+                return BadRequest("bad parameter:from");
+            }
+            if (!norm(ref to))
+            {
+                return BadRequest("bad parameter:to");
             }
 
-            Dal.Entry(rateToUsd).State = EntityState.Modified;
-
-            try
+            RateToUsd _from = await Dal.Get(from, TO_USE_DB);
+            RateToUsd _to = await Dal.Get(to, TO_USE_DB);
+            if (_from == null)
             {
-                await Dal.SaveChangesAsync();
-                return Ok(rateToUsd);
+                return Problem($"Exchange rate for {from} not exists");
             }
-            catch (DbUpdateConcurrencyException ex)
+            if (_to == null )
             {
-                if (!RateToUsdExists(code))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    Log.LogError(ex.StackTrace);
-                   // throw ex;
-                }
+                return Problem($"Exchange rate for {to} not exists");
             }
-            catch(Exception ex)
+            if (_to.Rate == 0.0)
             {
-                Log.LogError(ex.StackTrace);
-
+                return Problem($"Exchange rate for {to} has 0 rate division is impossible");
             }
 
-            return Conflict();
-        }
 
-        // POST: api/ExchangeRate
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkcode=2123754
-        [HttpPost]
-        public async Task<ActionResult<RateToUsd>>NewRateToUsd(RateToUsd rateToUsd)
-        {
-            if ( !norm(rateToUsd) )
-            {
-                return BadRequest();
-            }
+            FromTo ret = new FromTo() { From = _from, To = _to};
 
-            Dal.RateToUsds.Add(rateToUsd);
-            try
-            {
-                await Dal.SaveChangesAsync();
-                return CreatedAtAction("GetRateToUsd", new { code = rateToUsd.Code }, rateToUsd);
-            }
-            catch (DbUpdateException ex)
-            {
-                if (RateToUsdExists(rateToUsd.Code))
-                {
-                    return Conflict();
-                }
-                else
-                {
-                    Log.LogError(ex.StackTrace);
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.LogError(ex.StackTrace);
-            }
-
-            return Conflict();
+            return ret;
         }
 
         // DELETE: api/ExchangeRate/5
         [HttpDelete("{code}")]
-        public async Task<IActionResult> DeleteRateToUsd(string code)
+        public async Task<IActionResult> Delete(string code)
         {
             if (!norm(ref code))
             {
                 return BadRequest();
             }
 
-            var rateToUsd = await Dal.RateToUsds.FindAsync(code);
-            if (rateToUsd == null)
-            {
-                return NotFound();
-            }
+            await Dal.Delete(code, TO_USE_DB);
 
-            Dal.RateToUsds.Remove(rateToUsd);
-            await Dal.SaveChangesAsync();
-
-            return NoContent();
+       
+            return Ok();
         }
 
-        private bool RateToUsdExists(string code)
-        {
-            return Dal.RateToUsds.Any(e => e.Code == code);
-        }
+    
     }
 }

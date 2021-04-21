@@ -5,17 +5,17 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using AesCloudData;
 
-namespace AesCloudData.Controllers
+
+namespace AesCloudDataNet.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class UserActionsController : ControllerBase
     {
-        private readonly ClouddataContext _context;
+      //  private readonly ClouddataContext _context;
 
-        public UserActionsController(ClouddataContext context)
+        public UserActionsController()//ClouddataContext context)
         {
             _context = context;
         }
