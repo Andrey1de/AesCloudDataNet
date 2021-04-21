@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using static AesCloudDataNet.Exceptions.StoreException;
 
-namespace AesCloudDataNet.Services
+namespace AesCloudDataNet.Services.Abstract
 {
 
 
@@ -88,7 +88,7 @@ namespace AesCloudDataNet.Services
 
         }
         /// <summary>
-        /// 
+        /// Insertes or Updates Item ,if item == null , so removes key
         /// </summary>
         /// <param name="key"></param>
         /// <param name="item"></param>
@@ -98,13 +98,21 @@ namespace AesCloudDataNet.Services
             T itemRet;
             return SpoolAddOrUpdate(key, item, out itemRet);
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="item"></param>
+        /// <param name="itemRet"></param>
+        /// <returns></returns>
         public bool SpoolAddOrUpdate(TKey key, T item, out T itemRet)
         {
-            bool added = true; itemRet = null;
+            bool added = true; 
+            itemRet = null;
             if (item == null)
             {
-                SpoolItem<TKey, T> spi
-                DictInternal.TryRemove(key, out spi);
+                
+                SpoolDelete(key);
                 itemRet = null;
                 return false;
 
@@ -135,16 +143,11 @@ namespace AesCloudDataNet.Services
 
         }
 
-        public T SpoolClear()
+        public void SpoolClear()
         {
             DictInternal.Clear();
-            return store?.Item;
-
+         
         }
-
-#endregion
-
-
 
     }
 }

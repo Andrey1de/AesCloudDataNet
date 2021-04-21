@@ -29,7 +29,6 @@
     <Compile Remove="PgaJobstep.cs" />
     <Compile Remove="PgaJobsteplog.cs" />
     <Compile Remove="PgaSchedule.cs" />
-    <Compile Remove="Services\RatesService.cs" />
   </ItemGroup>
 
   <ItemGroup>

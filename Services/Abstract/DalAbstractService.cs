@@ -12,19 +12,9 @@ using Microsoft.EntityFrameworkCore;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
-namespace AesCloudDataNet.Services
+namespace AesCloudDataNet.Services.Abstract
 {
-    //public interface IDalAbstractServiceFacade<TKey, T> where T : class, new()
-    //{
-    //    public Task<T> Get(TKey key);
-    //    public Task<List<T>> List();
-
-    //    public Task<T> Insert(TKey key, T valueIn);
-
-    //    public Task<T> Update(TKey key, T valueIn);
-    //    public Task Delete(TKey key);
-
-    //}
+  
     public interface IDalAbstractService<TKey, T> where T : class, new()
     {
         public Task<T> Get(TKey key, bool toRetrieve);
@@ -63,7 +53,7 @@ namespace AesCloudDataNet.Services
         public virtual async Task<T> Get(TKey key, bool toRetrieve)//, bool useHttp)
         {
             T item = SpoolGet(key);
-            if (!toRetrieve)
+            if (item != null || !toRetrieve)
             {
                 return item;
             }
@@ -71,11 +61,7 @@ namespace AesCloudDataNet.Services
             try
             {
                 item = await RetrieveStorageItem(key);
-
-                if (item != default(T))
-                {
-                    DictInternal.TryAdd(key, new SpoolItem<TKey, T>(key, item));
-                }
+                this.SpoolAddOrUpdate(key, item);
 
                 return item;
 
@@ -198,7 +184,7 @@ namespace AesCloudDataNet.Services
             }
 
 
-                     //If value isn't exist return null
+             //If value isn't exist return null
             if (!HasItem(key))
             {
                 Exception ex = new StoreException(EType.Update,
@@ -224,7 +210,7 @@ namespace AesCloudDataNet.Services
             }
             if (item == null)
             {
-                DictInternal.TryRemove(key, out store);
+                SpoolDelete(key);
 
                 Exception ex = new StoreException(EType.Update,
                                  $"Update conflict key={key}");
@@ -232,11 +218,7 @@ namespace AesCloudDataNet.Services
                 throw ex;
             }
 
-
-            return store.Item;
-
-
-
+            return item;
         }
 
 

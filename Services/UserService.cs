@@ -1,4 +1,5 @@
 ﻿using AesCloudDataNet.Models;
+using AesCloudDataNet.Services.Abstract;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -23,7 +24,7 @@ namespace AesCloudDataNet.Services
         ILogger<UserService> Log;
     
         public UserService(ILogger<UserService> logger)
-            : base(logger)
+            : base(logger , 0) //USer stores Endless
         {
             Log = logger;
             //Client = new HttpClient();

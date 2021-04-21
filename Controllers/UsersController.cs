@@ -17,7 +17,7 @@ namespace AesCloudDataNet.Controllers
     public class UsersController : ControllerBase
     {
         const bool USE_DB = false;
-        const bool USE_HTTP = false;
+        //const bool USE_HTTP = false;
         readonly private ILogger<UsersController> Log;
 
         //      private readonly ClouddataContext _context;
@@ -97,7 +97,7 @@ namespace AesCloudDataNet.Controllers
             if (!Srv.HasItem(user.Name))
             {
                 return NotFound($"UPDATE User:{name} ");
-             }
+            }
 
             try
             {
