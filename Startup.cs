@@ -62,16 +62,13 @@ namespace AasCloudData
         {
             var old = Console.ForegroundColor;
             Console.ForegroundColor = ConsoleColor.Blue;
-            services.AddScoped<IExchangeRateService, ExchangeRateService>();
-
-            services.AddScoped<IUserService, UserService>();
-
-            services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
+               services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
             {
                 builder.AllowAnyOrigin()
                        .AllowAnyMethod()
                        .AllowAnyHeader();
             }));
+            services.AddHttpClient();
 
 
             if (isStr(PostgresConnectionString))
@@ -82,6 +79,10 @@ namespace AasCloudData
                 //    Console.WriteLine($"AddDbContext:UseNpgsql({PostgresConnectionString})");
                 //});
             }
+
+            services.AddScoped<IExchangeRateService, ExchangeRateService>();
+
+            services.AddScoped<IUserService, UserService>();
 
 
             Console.ForegroundColor = old;

@@ -5,12 +5,12 @@ using System.Text.Json.Serialization;
 
 namespace AesCloudDataNet.Models
 {
-    public partial class RateToUsd
+    public class RateToUsd
     {
         private string code;
         [JsonIgnore]
         public int Id { get => code.GetHashCode(); set { } }
-        public string Code { get =>  code; set =>  code = normCode( value); }
+        public string Code { get => code; set => code = normCode(value); }
         public string Name { get; set; }
         public double Rate { get; set; }
         public double Bid { get; set; }
@@ -24,5 +24,19 @@ namespace AesCloudDataNet.Models
         {
             return base.GetHashCode();
         }
+        public static readonly RateToUsd RateUsdToUsd = new RateToUsd()
+        {
+            Code = "USD",
+            Name = "USD Dollar",
+            Ask = 1.0,
+            Bid = 1.0,
+            Rate = 1.0,
+            LastRefreshed = DateTime.Now.AddDays(-5),
+            Stored = DateTime.Now.AddDays(-3)
+
+
+        };
+
     }
 }
+

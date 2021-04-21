@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Threading.Tasks;
 
 namespace AesCloudDataNet.Services
 {
@@ -19,6 +20,8 @@ namespace AesCloudDataNet.Services
         DalAbstractHttpService<string, RateToUsd>,
         IExchangeRateService
     {
+        private const bool TO_RETRIEVE = true;
+
         const int ACTUAL_MS = 1000 * 3600;
        // private readonly HttpClient Client;
         ILogger<ExchangeRateService> Log;
@@ -28,20 +31,32 @@ namespace AesCloudDataNet.Services
             : base(logger, client, ACTUAL_MS)
         {
             Log = logger;
-            Client = client;
+           // Client = client;
         }
-        //public override HttpClient PrepareHttpClient(HttpClient _httpClient)
-        //{
-        //    _httpClient.DefaultRequestHeaders.Add("Accept", "application/json,text/json,*/*");
-        //    _httpClient.DefaultRequestHeaders.Add("User-Agent", "that2dollar");
-        //    _httpClient.DefaultRequestHeaders.Accept
-        //          .Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        //    _httpClient.DefaultRequestHeaders.Accept
-        //          .Add(new MediaTypeWithQualityHeaderValue("application/html"));
-        //    _httpClient.DefaultRequestHeaders.Accept
-        //          .Add(new MediaTypeWithQualityHeaderValue("application/text"));
-        //    return _httpClient;
-        //}
+
+       
+
+        public async override Task<RateToUsd> Get(string code, bool toRetrieve = TO_RETRIEVE)
+        {
+            if(string.Compare(code,"USD",true) == 0)
+            {
+                return RateToUsd.RateUsdToUsd;
+            }
+            return await base.Get(code, toRetrieve);
+        }
+
+        public override HttpClient PrepareHttpClient(HttpClient _httpClient)
+        {
+            _httpClient.DefaultRequestHeaders.Add("Accept", "application/json,text/json,*/*");
+            _httpClient.DefaultRequestHeaders.Add("User-Agent", "that2dollar");
+            _httpClient.DefaultRequestHeaders.Accept
+                  .Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            _httpClient.DefaultRequestHeaders.Accept
+                  .Add(new MediaTypeWithQualityHeaderValue("application/html"));
+            _httpClient.DefaultRequestHeaders.Accept
+                  .Add(new MediaTypeWithQualityHeaderValue("application/text"));
+            return _httpClient;
+        }
         protected override string[] GetHttpUrls(string code)
         {
             string url = "https://www.alphavantage.co/query?" 
@@ -107,7 +122,7 @@ namespace AesCloudDataNet.Services
 
 
             ret.Name = fs("4. To_Currency Name");
-            ret.Rate = fd("Exchange Rate");
+            ret.Rate = fd("5. Exchange Rate");
             ret.LastRefreshed = DateTime.Parse(fs("6. Last Refreshed"));
             ret.Bid = fd("8. Bid Price");
             ret.Ask = fd("9. Ask Price");

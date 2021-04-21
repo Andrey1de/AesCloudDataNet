@@ -29,7 +29,7 @@ public abstract class DalAbstractHttpService<TKey, T> :
          where T : class, new()
 
 {
-    const bool TO_RETRIEVE = true;
+    private const bool TO_RETRIEVE = true;
     private ILogger Log;
     protected HttpClient Client;
 
