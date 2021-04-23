@@ -16,7 +16,7 @@ namespace AasCloudData
     public class Startup
     {
         // readonly string DATABASE_URL = "";
-        readonly string ConnectionString = "";
+       public static   string ConnectionString = "";
         readonly bool IS_HEROKU;
          string DATABASE_URL;
 
@@ -46,6 +46,7 @@ namespace AasCloudData
 
             }
             Console.WriteLine("ConnectionString:" + ConnectionString);
+            Environment.SetEnvironmentVariable("ConnectionString", ConnectionString);
 
             //if (IS_HEROKU)
             //{
@@ -68,7 +69,7 @@ namespace AasCloudData
 
             //}
 
-           // ConnectionString = Configuration.GetConnectionString("MySqlCinnectionString");
+            // ConnectionString = Configuration.GetConnectionString("MySqlCinnectionString");
             Console.ForegroundColor = old;
 
         }
