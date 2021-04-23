@@ -1,4 +1,6 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Text.Json.Serialization;
 
 #nullable disable
@@ -7,10 +9,10 @@ namespace AesCloudDataNet.Models
 {
     public class RateToUsd
     {
-        private string code;
-        [JsonIgnore]
-        public int Id { get => code.GetHashCode(); set { } }
-        public string Code { get => code; set => code = normCode(value); }
+     
+        //[JsonIgnore]
+        [Key]
+        public string Code { get ; set ; }
         public string Name { get; set; }
         public double Rate { get; set; }
         public double Bid { get; set; }
@@ -18,12 +20,20 @@ namespace AesCloudDataNet.Models
         public DateTime Stored { get; set; }
         public DateTime LastRefreshed { get; set; }
 
-        string normCode(string code) => (code ?? "").ToUpper().Substring(0, 3);
+        //void normCode(string codeIn)  {
+        //    _code = (codeIn ?? "").ToUpper().Substring(0, 3);
+        //}
 
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
+        //public override int GetHashCode()
+        //{
+        //    if(_hash == 0)
+        //    {
+        //        Array.ForEach(_code.ToCharArray(), p => { _hash = (_hash << 8) + (byte)p; });
+        //    }
+
+
+        //    return _hash;
+        //}
         public static readonly RateToUsd RateUsdToUsd = new RateToUsd()
         {
             Code = "USD",

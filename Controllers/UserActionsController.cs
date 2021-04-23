@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AesCloudDataNet.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,9 +14,9 @@ namespace AesCloudDataNet.Controllers
     [ApiController]
     public class UserActionsController : ControllerBase
     {
-      //  private readonly ClouddataContext _context;
+        private readonly ClouddataContext _context;
 
-        public UserActionsController()//ClouddataContext context)
+        public UserActionsController(ClouddataContext context)
         {
             _context = context;
         }

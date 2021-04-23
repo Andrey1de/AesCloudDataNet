@@ -30,9 +30,11 @@ namespace AesCloudDataNet.Services
             //Client = new HttpClient();
         }
         #region Facade
-   
+
+       
         public override async Task<User> Get(string name, bool usePersist)
         {
+           
             return await base.Get(name, usePersist);
         }
         public override async Task<List<User>> List(bool usePersist)

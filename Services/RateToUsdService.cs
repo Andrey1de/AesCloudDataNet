@@ -10,23 +10,23 @@ using System.Threading.Tasks;
 
 namespace AesCloudDataNet.Services
 {
-    public interface IExchangeRateService :
+    public interface IRateToUsdService :
             IDalAbstractHttpService<string, RateToUsd>
     {
      
     }
 
-    public class ExchangeRateService :
+    public class RateToUsdService :
         DalAbstractHttpService<string, RateToUsd>,
-        IExchangeRateService
+        IRateToUsdService
     {
         private const bool TO_RETRIEVE = true;
 
         const int ACTUAL_MS = 1000 * 3600;
        // private readonly HttpClient Client;
-        ILogger<ExchangeRateService> Log;
+        ILogger<RateToUsdService> Log;
 
-        public ExchangeRateService(ILogger<ExchangeRateService> logger,
+        public RateToUsdService(ILogger<RateToUsdService> logger,
             HttpClient client)
             : base(logger, client, ACTUAL_MS)
         {
@@ -111,7 +111,7 @@ namespace AesCloudDataNet.Services
 
         
             var code1 = fs("3. To_Currency Code")?.ToUpper(); 
-            if ( code1 != code)
+            if ( string.Compare(code1, code,true) != 0)
             {
                 Log.LogWarning($"DecodeBody : Error of Parsing= {{{jsonBody}}}");
                 return null;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 
 namespace AesCloudDataNet.Models
@@ -8,6 +9,7 @@ namespace AesCloudDataNet.Models
     /// </summary>
     public class FromTo
     {
+       // [Key]
         public string Pair => From.Code + "-" + To.Code;
         public double ExchangeRate => (To.Rate == 0) ? 0 : (From.Rate / To.Rate);
 

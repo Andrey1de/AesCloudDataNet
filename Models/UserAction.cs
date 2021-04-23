@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 #nullable disable
@@ -9,10 +10,11 @@ namespace AesCloudDataNet.Models
     public partial class UserAction
     {
         private string user = "";
-        private Guid guid = System.Guid.Empty;
+        private Guid guid = Guid.Empty;
 
         [JsonIgnore]
-        public int Id { get => guid.GetHashCode(); set { } }
+        [Key]
+        public int UserActionId { get => guid.GetHashCode(); set { } }
         public  Guid Guid{ get => 
                 guid = (guid != System.Guid.Empty) ? guid : System.Guid.NewGuid();
                  set => guid = value; }

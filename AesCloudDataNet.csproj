@@ -22,7 +22,7 @@
 
   <ItemGroup>
     <Compile Remove="Controllers\UserActionsController.cs" />
-    <Compile Remove="Models\ClouddataContext.cs" />
+    <Compile Remove="Controllers\UsersController.cs" />
     <Compile Remove="PgaException.cs" />
     <Compile Remove="PgaJob.cs" />
     <Compile Remove="PgaJobagent.cs" />
@@ -34,20 +34,22 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="db\aesclouddata.sqlite" />
     <None Remove="local.sqlite" />
     <None Remove="postgresContext.cs.old" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.5" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.5" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.5">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="5.0.2" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.5" />
+    <PackageReference Include="MySql.EntityFrameworkCore" Version="5.0.3" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.1.3" />
+    <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>

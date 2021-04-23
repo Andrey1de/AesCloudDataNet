@@ -1,3 +1,4 @@
+using AesCloudDataNet.DB;
 using AesCloudDataNet.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -13,8 +14,8 @@ namespace AasCloudData
 {
     public class Startup
     {
-       // readonly string DATABASE_URL = "";
-        readonly string PostgresConnectionString = "";
+        // readonly string DATABASE_URL = "";
+        readonly string ConnectionString = "";
         readonly bool IS_HEROKU;
 
         bool isStr(string str) => str != null && str.Length > 10;
@@ -25,9 +26,13 @@ namespace AasCloudData
             var old = Console.ForegroundColor;
             Console.ForegroundColor = ConsoleColor.Blue;
 
-            IS_HEROKU  = true || bool.TryParse(Environment.GetEnvironmentVariable("IS_HEROKU"), out IS_HEROKU);
-            Console.WriteLine("IS_HEROKU:" + IS_HEROKU.ToString().ToUpper());
-    
+            IS_HEROKU = bool.TryParse(Environment.GetEnvironmentVariable("IS_HEROKU"), out IS_HEROKU);
+            if (IS_HEROKU)
+            {
+                Console.WriteLine("IS_HEROKU:" + IS_HEROKU.ToString().ToUpper());
+
+            }
+
             //if (IS_HEROKU)
             //{
 
@@ -49,9 +54,9 @@ namespace AasCloudData
 
             //}
 
-
+            ConnectionString = Configuration.GetConnectionString("MySqlCinnectionString");
             Console.ForegroundColor = old;
-  
+
         }
 
 
@@ -62,25 +67,25 @@ namespace AasCloudData
         {
             var old = Console.ForegroundColor;
             Console.ForegroundColor = ConsoleColor.Blue;
-               services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
-            {
-                builder.AllowAnyOrigin()
-                       .AllowAnyMethod()
-                       .AllowAnyHeader();
-            }));
+            services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
+         {
+             builder.AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader();
+         }));
             services.AddHttpClient();
 
 
-            if (isStr(PostgresConnectionString))
+            //        if (isStr(PostgresConnectionString))
+            //      {
+            _ = services.AddDbContext<AesCloudDataContext>(options =>
             {
-                //_ = services.AddDbContext<ClouddataContext>(options =>
-                //{
-                //    options.UseNpgsql(PostgresConnectionString);
-                //    Console.WriteLine($"AddDbContext:UseNpgsql({PostgresConnectionString})");
-                //});
-            }
+                options.UseMySQL(ConnectionString);
+                Console.WriteLine($"AddDbContext:UseNpgsql({ConnectionString})");
+            });
+            //  }
 
-            services.AddScoped<IExchangeRateService, ExchangeRateService>();
+            services.AddScoped<IRateToUsdService, RateToUsdService>();
 
             services.AddScoped<IUserService, UserService>();
 
@@ -110,7 +115,7 @@ namespace AasCloudData
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "AasCloudData v1"));
             }
 
-           app.UseHttpsRedirection();
+            app.UseHttpsRedirection();
             app.UseRouting();
 
             app.UseAuthorization();

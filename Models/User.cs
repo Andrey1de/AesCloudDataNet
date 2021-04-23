@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 #nullable disable
@@ -8,27 +9,25 @@ namespace AesCloudDataNet.Models
 {
     public partial class User
     {
-        private string name;
+        //private string name;
         private Guid? guid;
-        private int _hashCode = 0;
+        //private int _hashCode = 0;
 
-        [JsonIgnore]
-        public int Id { get => _hashCode; set { } }
+        [Key]
+       // [JsonIgnore]
+      
         public string Name
         {
-            get => name;
-            set { 
-                name = value.ToUpper();
-                _hashCode = name.GetHashCode();
-              } 
+            get ;
+            set ;
         }
         public string Email { get; set; }
-        public string Password { get; set; }
+        public byte[] Password { get; set; }
         public Guid? Guid { get => guid = guid ?? System.Guid.NewGuid(); set => guid = value; }
         public int Severity { get; set; }
-        public override int GetHashCode()
-        {
-            return _hashCode;
-        }
+        //public override int GetHashCode()
+        //{
+        //    return _hashCode;
+        //}
     }
 }

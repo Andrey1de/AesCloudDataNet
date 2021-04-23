@@ -224,8 +224,7 @@ namespace AesCloudDataNet.Services.Abstract
 
         public virtual async Task Delete(TKey key, bool usePersist)
         {
-            SpoolItem<TKey,T> store = null;
-            SpoolDelete(key);
+             SpoolDelete(key);
             if (usePersist)
             {
 
