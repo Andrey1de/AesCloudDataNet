@@ -45,6 +45,7 @@ namespace AasCloudData
                 ConnectionString = Configuration.GetConnectionString("MySqlCinnectionString");
 
             }
+            Console.WriteLine("ConnectionString:" + ConnectionString);
 
             //if (IS_HEROKU)
             //{
@@ -67,7 +68,7 @@ namespace AasCloudData
 
             //}
 
-            ConnectionString = Configuration.GetConnectionString("MySqlCinnectionString");
+           // ConnectionString = Configuration.GetConnectionString("MySqlCinnectionString");
             Console.ForegroundColor = old;
 
         }
