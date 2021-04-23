@@ -51,3 +51,10 @@ Using an Existing Database (Database-First)
 ## dotnet ef dbcontext scaffold "host=localhost;port=5432;database=postgres;userid=postgres;password=1q1q" Npgsql.EntityFrameworkCore.PostgreSQL
 
   PM>dotnet ef dbcontext scaffold "host=localhost;port=5432;database=clouddata;userid=postgres;password=1q1q" Npgsql.EntityFrameworkCore.PostgreSQL
+
+
+
+#  $ heroku config  -a=aes-cloud-data | grep CLEARDB_DATABASE_URL
+## CLEARDB_DATABASE_URL: 
+mysql://username:password@hostname/database_name?reconnect=true
+mysql://b1b11a6c18e438:97035749@us-cdbr-east-03.cleardb.com/heroku_16d06713d5b8727?reconnect=true

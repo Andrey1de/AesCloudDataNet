@@ -1,5 +1,6 @@
 using AesCloudDataNet.DB;
 using AesCloudDataNet.Services;
+using AesCloudDataNet.Utils;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +18,7 @@ namespace AasCloudData
         // readonly string DATABASE_URL = "";
         readonly string ConnectionString = "";
         readonly bool IS_HEROKU;
+         string DATABASE_URL;
 
         bool isStr(string str) => str != null && str.Length > 10;
         public Startup(IConfiguration configuration)
@@ -27,9 +29,20 @@ namespace AasCloudData
             Console.ForegroundColor = ConsoleColor.Blue;
 
             IS_HEROKU = bool.TryParse(Environment.GetEnvironmentVariable("IS_HEROKU"), out IS_HEROKU);
+            DATABASE_URL = Environment.GetEnvironmentVariable("DATABASE_URL");
+       // mysql://b1b11a6c18e438:97035749@us-cdbr-east-03.cleardb.com/heroku_16d06713d5b8727?reconnect=true
             if (IS_HEROKU)
             {
                 Console.WriteLine("IS_HEROKU:" + IS_HEROKU.ToString().ToUpper());
+
+                if (!string.IsNullOrEmpty(DATABASE_URL))
+                {
+                    ConnectionString = DBUrlParse.ParseDatabaseUrl(DATABASE_URL);
+                }
+            }
+            else
+            {
+                ConnectionString = Configuration.GetConnectionString("MySqlCinnectionString");
 
             }
 

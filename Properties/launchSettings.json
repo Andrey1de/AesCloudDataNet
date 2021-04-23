@@ -23,8 +23,10 @@
       "launchBrowser": true,
       "launchUrl": "swagger",
       "environmentVariables": {
+        "DATABASE_URL": "mysql://b1b11a6c18e438:97035749@us-cdbr-east-03.cleardb.com/heroku_16d06713d5b8727?reconnect=true",
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
+      "sqlDebugging": true,
       "dotnetRunMessages": "true",
       "applicationUrl": "http://localhost:5000"
     }
