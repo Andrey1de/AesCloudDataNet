@@ -31,7 +31,7 @@ namespace AasCloudData
             IS_HEROKU = bool.TryParse(Environment.GetEnvironmentVariable("IS_HEROKU"), out IS_HEROKU);
             DATABASE_URL = Environment.GetEnvironmentVariable("DATABASE_URL");
        // mysql://b1b11a6c18e438:97035749@us-cdbr-east-03.cleardb.com/heroku_16d06713d5b8727?reconnect=true
-            if (IS_HEROKU)
+            if (true || IS_HEROKU)
             {
                 Console.WriteLine("IS_HEROKU:" + IS_HEROKU.ToString().ToUpper());
 

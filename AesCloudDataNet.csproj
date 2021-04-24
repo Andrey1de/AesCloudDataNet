@@ -14,9 +14,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\**" />
     <Compile Remove="SQL\**" />
+    <Content Remove="Migrations\**" />
     <Content Remove="SQL\**" />
+    <EmbeddedResource Remove="Migrations\**" />
     <EmbeddedResource Remove="SQL\**" />
+    <None Remove="Migrations\**" />
     <None Remove="SQL\**" />
   </ItemGroup>
 

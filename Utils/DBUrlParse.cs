@@ -21,7 +21,7 @@ namespace AesCloudDataNet.Utils
                 var host = arr[3];
                 var port = 3306;// arr[4];
                 var database = arr[4];
-                string connect = $"host={host}; port={port}; database={database}; userid={userid}; password={password}; reconnect=true ;";
+                string connect = $"host={host}; port={port}; database={database}; userid={userid}; password={password};";
                 return connect;
             }
             catch (Exception ex)

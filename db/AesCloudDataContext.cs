@@ -20,6 +20,7 @@ namespace AesCloudDataNet.DB
             : base(options)
         {
             Configuration = configuration;
+            Database.EnsureCreated();// = false;
         }
 
         public virtual DbSet<RateToUsd> RateToUsd { get; set; }
